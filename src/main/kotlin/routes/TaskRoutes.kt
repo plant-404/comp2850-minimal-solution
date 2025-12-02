@@ -48,7 +48,7 @@ fun Routing.configureTaskRoutes(store: TaskStore = TaskStore()) {
  * Week 8: Handle paginated task list view with HTMX fragment support.
  */
 private suspend fun ApplicationCall.handleTaskList(store: TaskStore) {
-    timed("T0_list", jsMode()) {
+    timed("T4_list", jsMode()) {
         val query = requestedQuery()
         val page = requestedPage()
         val paginated = paginateTasks(store, query, page)
@@ -61,7 +61,7 @@ private suspend fun ApplicationCall.handleTaskList(store: TaskStore) {
  * Week 8: Handle task fragment route for live filtering + pagination updates.
  */
 private suspend fun ApplicationCall.handleTaskFragment(store: TaskStore) {
-    timed("T1_filter", jsMode()) {
+    timed("T3_filter", jsMode()) {
         val query = requestedQuery()
         val page = requestedPage()
         if (!isHtmxRequest()) {
@@ -79,7 +79,7 @@ private suspend fun ApplicationCall.handleTaskFragment(store: TaskStore) {
  * Week 7 & 9: Create task, log instrumentation, refresh task area.
  */
 private suspend fun ApplicationCall.handleCreateTask(store: TaskStore) {
-    timed("T3_add", jsMode()) {
+    timed("T1_add", jsMode()) {
         val params = receiveParameters()
         val title = params["title"]?.trim() ?: ""
         val query = params["q"].toQuery()
@@ -143,14 +143,14 @@ private suspend fun ApplicationCall.handleToggleTask(store: TaskStore) {
     val id =
         parameters["id"] ?: run {
             respond(HttpStatusCode.BadRequest, "Missing task ID")
-            return@timed
+            return
         }
 
     val updated = store.toggleComplete(id)
 
     if (updated == null) {
         respond(HttpStatusCode.NotFound, "Task not found")
-        return@timed
+        return
     }
 
     if (isHtmxRequest()) {
@@ -209,7 +209,7 @@ private suspend fun ApplicationCall.handleDeleteTask(store: TaskStore) {
  * Handle task search with query parameter.
  */
 private suspend fun ApplicationCall.handleSearchTasks(store: TaskStore) {
-    timed("T1_filter", jsMode()) {
+    timed("T3_filter", jsMode()) {
         val query = requestedQuery()
         val page = requestedPage()
         val paginated = paginateTasks(store, query, page)
@@ -301,13 +301,13 @@ private suspend fun ApplicationCall.handleEditTask(store: TaskStore) {
     timed("T2_edit", jsMode()) {
         val id = parameters["id"] ?: run {
             respond(HttpStatusCode.BadRequest)
-            return
+            return@timed
         }
 
         val task = store.getById(id)
         if (task == null) {
             respond(HttpStatusCode.NotFound)
-            return
+            return@timed
         }
 
         if (isHtmxRequest()) {
