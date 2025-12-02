@@ -140,38 +140,36 @@ private suspend fun ApplicationCall.handleCreateTaskSuccess(
  * Handle task toggle (mark complete/incomplete).
  */
 private suspend fun ApplicationCall.handleToggleTask(store: TaskStore) {
-    timed("T2_edit", jsMode()) {
-        val id =
-            parameters["id"] ?: run {
-                respond(HttpStatusCode.BadRequest, "Missing task ID")
-                return@timed
-            }
-
-        val updated = store.toggleComplete(id)
-
-        if (updated == null) {
-            respond(HttpStatusCode.NotFound, "Task not found")
+    val id =
+        parameters["id"] ?: run {
+            respond(HttpStatusCode.BadRequest, "Missing task ID")
             return@timed
         }
 
-        if (isHtmxRequest()) {
-            val taskHtml =
-                renderTemplate(
-                    "tasks/_item.peb",
-                    mapOf("task" to updated.toPebbleContext()),
-                )
+    val updated = store.toggleComplete(id)
 
-            val statusText = if (updated.completed) "marked complete" else "marked incomplete"
-            val statusHtml =
-                messageStatusFragment(
-                    """Task "${updated.title}" $statusText.""",
-                )
+    if (updated == null) {
+        respond(HttpStatusCode.NotFound, "Task not found")
+        return@timed
+    }
 
-            respondText(taskHtml + "\n" + statusHtml, ContentType.Text.Html)
-        } else {
-            response.headers.append("Location", "/tasks")
-            respond(HttpStatusCode.SeeOther)
-        }
+    if (isHtmxRequest()) {
+        val taskHtml =
+            renderTemplate(
+                "tasks/_item.peb",
+                mapOf("task" to updated.toPebbleContext()),
+            )
+
+        val statusText = if (updated.completed) "marked complete" else "marked incomplete"
+        val statusHtml =
+            messageStatusFragment(
+                """Task "${updated.title}" $statusText.""",
+            )
+
+        respondText(taskHtml + "\n" + statusHtml, ContentType.Text.Html)
+    } else {
+        response.headers.append("Location", "/tasks")
+        respond(HttpStatusCode.SeeOther)
     }
 }
 
@@ -299,24 +297,27 @@ private fun messageStatusFragment(
  * Week 7: GET /tasks/{id}/edit - Show inline edit form
  */
 private suspend fun ApplicationCall.handleEditTask(store: TaskStore) {
-    val id = parameters["id"] ?: run {
-        respond(HttpStatusCode.BadRequest)
-        return
-    }
+    // Add timer for edit task event
+    timed("T2_edit", jsMode()) {
+        val id = parameters["id"] ?: run {
+            respond(HttpStatusCode.BadRequest)
+            return
+        }
 
-    val task = store.getById(id)
-    if (task == null) {
-        respond(HttpStatusCode.NotFound)
-        return
-    }
+        val task = store.getById(id)
+        if (task == null) {
+            respond(HttpStatusCode.NotFound)
+            return
+        }
 
-    if (isHtmxRequest()) {
-        // HTMX: return inline edit fragment
-        val html = renderTemplate("tasks/_edit.peb", mapOf("task" to task.toPebbleContext()))
-        respondText(html, ContentType.Text.Html)
-    } else {
-        // No-JS: redirect to list (would need edit mode support in index)
-        respondRedirect("/tasks")
+        if (isHtmxRequest()) {
+            // HTMX: return inline edit fragment
+            val html = renderTemplate("tasks/_edit.peb", mapOf("task" to task.toPebbleContext()))
+            respondText(html, ContentType.Text.Html)
+        } else {
+            // No-JS: redirect to list (would need edit mode support in index)
+            respondRedirect("/tasks")
+        }
     }
 }
 
