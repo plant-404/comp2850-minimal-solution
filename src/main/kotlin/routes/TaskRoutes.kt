@@ -197,7 +197,8 @@ private suspend fun ApplicationCall.handleDeleteTask(store: TaskStore) {
                 messageStatusFragment(
                     """Task "${task?.title ?: "Unknown"}" deleted.""",
                 )
-            respondText(statusHtml, ContentType.Text.Html)
+            val countHtml = filterCountFragment(store.getAll().size)
+            respondText(statusHtml + "\n" + countHtml, ContentType.Text.Html)
         } else {
             response.headers.append("Location", "/tasks")
             respond(HttpStatusCode.SeeOther)
@@ -256,7 +257,8 @@ private suspend fun ApplicationCall.respondTaskArea(
     htmxTrigger: String? = null,
 ) {
     val fragment = renderTaskArea(paginated)
-    val payload = if (statusHtml != null) fragment + "\n" + statusHtml else fragment
+    val listHtml = filterCountFragment(paginated.page.totalItems)
+    val payload = if (statusHtml != null) fragment + "\n" + statusHtml + "\n" + listHtml else fragment + "\n" + listHtml
 
     if (htmxTrigger != null) {
         response.headers.append("HX-Trigger", htmxTrigger)
@@ -281,6 +283,16 @@ private fun filterStatusFragment(
     } else {
         val noun = if (total == 1) "task" else "tasks"
         """<div id="status" hx-swap-oob="true" role="status">Found $total $noun matching "$query".</div>"""
+    }
+
+private fun filterCountFragment(
+    total: Int
+): String =
+    if (total < 1) {
+        """<div id="count" hx-swap-oob="true" role="count">No tasks yet. Add one below!</div>"""
+    } else {
+        val noun = if (total == 1) "task" else "tasks"
+        """<div id="count" hx-swap-oob="true" role="count">Currently $total $noun.</div>"""
     }
 
 private fun messageStatusFragment(

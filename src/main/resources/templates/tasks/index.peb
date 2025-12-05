@@ -8,11 +8,13 @@
         <h1>Task Manager</h1>
         <p>
             Manage your tasks with full keyboard and screen reader support.
-            {% if totalItems > 0 %}
-                Currently {{ totalItems }} task{% if totalItems != 1 %}s{% endif %}.
-            {% else %}
-                No tasks yet. Add one below!
-            {% endif %}
+            <div id="count">
+                {% if totalItems > 0 %}
+                    Currently {{ totalItems }} task{% if totalItems != 1 %}s{% endif %}.
+                {% else %}
+                    No tasks yet. Add one below!
+                {% endif %}
+            <div id="count">
         </p>
     </header>
 
