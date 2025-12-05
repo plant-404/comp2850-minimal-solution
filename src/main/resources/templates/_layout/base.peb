@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -54,6 +54,13 @@
     button {
       color: white !important; /* White text on blue background for better contrast */
     }
+
+    /* Override Pico.css focus indicators (WCAG 1.4.11 / 2.4.13) */
+    *:focus {
+      outline: 3px solid #f9a9f9ff; !important
+      outline-offset: 2px; !important
+    }
+
   </style>
 </head>
 <body>
