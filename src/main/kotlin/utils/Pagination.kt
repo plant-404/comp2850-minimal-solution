@@ -20,6 +20,7 @@ data class Page<T>(
     val totalPages: Int,
     val totalItems: Int,
     val pageSize: Int,
+    var editId: String = "None"
 ) {
     val hasPrevious: Boolean get() = currentPage > 1
     val hasNext: Boolean get() = currentPage < totalPages
@@ -79,6 +80,7 @@ data class Page<T>(
             items: List<T>,
             currentPage: Int = 1,
             pageSize: Int = 10,
+            editId: String = "None"
         ): Page<T> {
             val totalItems = items.size
             val totalPages = if (totalItems == 0) 1 else (totalItems + pageSize - 1) / pageSize
@@ -99,6 +101,7 @@ data class Page<T>(
 
             return Page(
                 items = pageItems,
+                editId = editId,
                 currentPage = validPage,
                 totalPages = totalPages,
                 totalItems = totalItems,
@@ -113,6 +116,7 @@ data class Page<T>(
     fun toPebbleContext(itemsKey: String = "items"): Map<String, Any> =
         mapOf(
             itemsKey to items,
+            "editId" to editId,
             "currentPage" to currentPage,
             "totalPages" to totalPages,
             "totalItems" to totalItems,

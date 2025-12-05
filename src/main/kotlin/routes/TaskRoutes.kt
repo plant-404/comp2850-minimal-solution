@@ -24,6 +24,7 @@ import utils.logValidationError
 import utils.timed
 
 private const val PAGE_SIZE = 10
+private var taskToEdit = "None"
 
 private data class PaginatedTasks(
     val page: Page<Map<String, Any>>,
@@ -51,7 +52,7 @@ private suspend fun ApplicationCall.handleTaskList(store: TaskStore) {
     timed("T4_list", jsMode()) {
         val query = requestedQuery()
         val page = requestedPage()
-        val paginated = paginateTasks(store, query, page)
+        val paginated = paginateTasks(store, query, page, taskToEdit)
         val html = renderTemplate("tasks/index.peb", paginated.context)
         respondText(html, ContentType.Text.Html)
     }
@@ -229,11 +230,12 @@ private fun paginateTasks(
     store: TaskStore,
     query: String,
     page: Int,
+    edit: String = "None"
 ): PaginatedTasks {
     val tasks =
         (if (query.isBlank()) store.getAll() else store.search(query))
             .map { it.toPebbleContext() }
-    val pageData = Page.paginate(tasks, currentPage = page, pageSize = PAGE_SIZE)
+    val pageData = Page.paginate(tasks, currentPage = page, pageSize = PAGE_SIZE, editId = edit)
 
     // Create context with both flat keys (for backwards compatibility) and nested page object (for templates)
     val context =
@@ -243,6 +245,7 @@ private fun paginateTasks(
                 "page" to
                     mapOf(
                         "items" to pageData.items,
+                        "editId" to pageData.editId,
                         "currentPage" to pageData.currentPage,
                         "totalPages" to pageData.totalPages,
                         "totalItems" to pageData.totalItems,
@@ -328,6 +331,7 @@ private suspend fun ApplicationCall.handleEditTask(store: TaskStore) {
             respondText(html, ContentType.Text.Html)
         } else {
             // No-JS: redirect to list (would need edit mode support in index)
+            taskToEdit = id
             respondRedirect("/tasks")
         }
     }
