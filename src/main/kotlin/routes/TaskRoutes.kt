@@ -381,6 +381,7 @@ private suspend fun ApplicationCall.handleUpdateTask(store: TaskStore) {
         respondText(html + status, ContentType.Text.Html)
     } else {
         // No-JS: redirect to list
+        taskToEdit = "None"
         respondRedirect("/tasks")
     }
 }
@@ -405,6 +406,7 @@ private suspend fun ApplicationCall.handleViewTask(store: TaskStore) {
         val html = renderTemplate("tasks/_item.peb", mapOf("task" to task.toPebbleContext()))
         respondText(html, ContentType.Text.Html)
     } else {
+        taskToEdit = "None"
         respondRedirect("/tasks")
     }
 }
