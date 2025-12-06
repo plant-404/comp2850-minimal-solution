@@ -24,7 +24,7 @@
     {% endif %}
 
     <button type="submit">Save</button>
-    <a href="/tasks"
+    <a href="/tasks/{{ task.id }}/view"
        hx-get="/tasks/{{ task.id }}/view"
        hx-target="#task-{{ task.id }}"
        hx-swap="outerHTML"
